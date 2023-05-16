@@ -37,7 +37,12 @@ function PostModal() {
       >
         <Post id={postId} />
       </Modal>
-      <div onClick={() => history.goBack()} className={styles.close}>
+      <div
+        onClick={() => {
+          history.goBack();
+        }}
+        className={styles.close}
+      >
         <CloseIcon />
       </div>
     </>

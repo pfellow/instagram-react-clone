@@ -114,7 +114,7 @@ const ProfileNameSection = ({ user, isOwner, optionsMenuClickHandler }) => {
           <Typography className={styles.username}>{user.username}</Typography>
           {isOwner ? (
             <>
-              <Link to='/account/edit'>
+              <Link to='/accounts/edit'>
                 <Button variant='outlined'>Edit Profile</Button>
               </Link>
               <div
