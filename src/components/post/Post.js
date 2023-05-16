@@ -19,12 +19,18 @@ import {
   TextField
 } from '@material-ui/core';
 import OptionsDialog from '../shared/OptionsDialog';
+import PostSkeleton from './PostSkeleton';
 import { defaultPost } from '../../data';
 
 function Post() {
   const styles = usePostStyles();
   const [showOptionsDialog, setShowOptionsDialog] = useState(false);
   const { media, id, likes, user, caption, comments } = defaultPost;
+  const [loading, setLoading] = useState(true);
+
+  setTimeout(() => setLoading(false), 2000);
+
+  if (loading) return <PostSkeleton />;
 
   return (
     <div className={styles.postContainer}>

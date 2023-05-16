@@ -1419,8 +1419,8 @@ export const useProfilePageStyles = makeStyles((theme) => {
       height: 90
     },
     unfollowDialogScrollPaper: {
-      display: 'grid',
-      gridTemplateColumns: 'minmax(auto, 496px)'
+      display: 'grid !important',
+      gridTemplateColumns: 'minmax(auto, 496px) !important'
     },
     cancelButton: {
       padding: '12px 8px !important'
