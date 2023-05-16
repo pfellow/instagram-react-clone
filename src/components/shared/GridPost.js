@@ -10,7 +10,7 @@ function GridPost({ post }) {
   const openPostModalHandler = () => {
     history.push({
       pathname: `/p/${post.id}`,
-      state: { modal: true }
+      state: { modal: true, prevLocation: history.location.pathname }
     });
   };
 

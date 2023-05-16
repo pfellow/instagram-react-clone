@@ -39,7 +39,10 @@ function PostModal() {
       </Modal>
       <div
         onClick={() => {
-          history.goBack();
+          history.push({
+            pathname: history.location.state.prevLocation,
+            state: { modal: false, prevLocation: history.location.pathname }
+          });
         }}
         className={styles.close}
       >
