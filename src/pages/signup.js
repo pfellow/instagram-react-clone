@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { useSignUpPageStyles } from '../styles';
 import { LoginWithFacebook } from './login';
 import SEO from '../components/shared/Seo';
@@ -20,7 +20,7 @@ import { CHECK_IF_USERNAME_IS_TAKEN } from '../graphql/queries';
 
 function SignUpPage() {
   const styles = useSignUpPageStyles();
-  const { register, handleSubmit, formState } = useForm({ mode: 'onMouse' });
+  const { register, handleSubmit, formState } = useForm({ mode: 'onBlur' });
   const history = useHistory();
   const { signUpWithEmailAndPassword } = useContext(AuthContext);
   const [error, setError] = React.useState('');
@@ -99,7 +99,7 @@ function SignUpPage() {
                   validate: (input) => isEmail(input)
                 })}
                 InputProps={{
-                  endAdornment: formState.errors?.email
+                  endAdornment: formState.errors.email
                     ? errorIcon
                     : formState.touchedFields.email && validIcon
                 }}
