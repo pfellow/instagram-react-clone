@@ -53,8 +53,27 @@ function AuthProvider({ children }) {
     });
   }, []);
 
-  const signInWithGoogle = async () => {
-    await firebase.auth().signInWithPopup(provider);
+  const logInWithGoogle = async () => {
+    const data = await firebase.auth().signInWithPopup(provider);
+    if (data.additionalUserInfo.isNewUser) {
+      console.log(data);
+      const { user } = data;
+      const username = `${user.displayName.replace(/\s+/g, '')}${user.uid.slice(
+        -5
+      )}`;
+      const variables = {
+        userId: user.uid,
+        name: user.displayName,
+        username,
+        email: user.email,
+        bio: '',
+        website: '',
+        profileImage: user.photoURL,
+        phoneNumber: ''
+      };
+      console.log(variables);
+      await createUser({ variables });
+    }
   };
 
   const loginWithEmailAndPassword = async (email, password) => {
@@ -89,6 +108,10 @@ function AuthProvider({ children }) {
     setAuthState({ status: 'out' });
   };
 
+  const updateEmail = async (email) => {
+    await authState.user.updateEmail(email);
+  };
+
   if (authState.status === 'loading') {
     return null;
   } else {
@@ -96,10 +119,11 @@ function AuthProvider({ children }) {
       <AuthContext.Provider
         value={{
           authState,
-          signInWithGoogle,
+          logInWithGoogle,
           signOut,
           signUpWithEmailAndPassword,
-          loginWithEmailAndPassword
+          loginWithEmailAndPassword,
+          updateEmail
         }}
       >
         {children}

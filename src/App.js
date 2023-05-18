@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useContext, createContext } from 'react';
 import {
   Switch,
   Route,
@@ -16,13 +16,19 @@ import SignUpPage from './pages/signup';
 import NotFoundPage from './pages/not-found';
 import PostModal from './components/post/PostModal';
 import { useRef } from 'react';
-import { useEffect } from 'react';
 import { AuthContext } from './auth';
+import { useSubscription } from '@apollo/client';
+import { ME } from './graphql/subscriptions';
+import LoadingScreen from './components/shared/LoadingScreen';
+
+export const UserContext = createContext();
 
 function App() {
   const { authState } = useContext(AuthContext);
-  console.log(authState);
   const isAuth = authState.status === 'in';
+  const userId = isAuth ? authState.user.uid : null;
+  const variables = { userId };
+  const { data, loading } = useSubscription(ME, { variables });
   const history = useHistory();
   const location = useLocation();
   const prevLocation = useRef(location);
@@ -34,6 +40,7 @@ function App() {
     }
   }, [location, modal, history.action]);
 
+  if (loading) return <LoadingScreen />;
   const isModalOpen = modal && prevLocation.current !== location;
 
   if (!isAuth) {
@@ -46,8 +53,11 @@ function App() {
     );
   }
 
+  const me = isAuth && data ? data.users[0] : null;
+  const currentUserId = me?.id || undefined;
+
   return (
-    <>
+    <UserContext.Provider value={{ me, currentUserId }}>
       <Switch location={isModalOpen ? prevLocation.current : location}>
         <Route exact path='/' component={FeedPage} />
         <Route path='/explore' component={ExplorePage} />
@@ -57,7 +67,7 @@ function App() {
         <Route path='*' component={NotFoundPage} />
       </Switch>
       {isModalOpen && <Route exact path='/p/:postId' component={PostModal} />}
-    </>
+    </UserContext.Provider>
   );
 }
 

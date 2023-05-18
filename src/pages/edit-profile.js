@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useEditProfilePageStyles } from '../styles';
 import Layout from '../components/shared/Layout';
 import {
@@ -9,16 +9,34 @@ import {
   List,
   ListItem,
   ListItemText,
+  Slide,
+  Snackbar,
   TextField,
   Typography
 } from '@material-ui/core';
 import { Menu } from '@material-ui/icons';
-import { defaultCurrentUser } from '../data';
 import ProfilePicture from '../components/shared/ProfilePicture';
+import { UserContext } from '../App';
+import { useMutation, useQuery } from '@apollo/client';
+import { GET_EDIT_USER_PROFILE } from '../graphql/queries';
+import LoadingScreen from '../components/shared/LoadingScreen';
+import { useForm } from 'react-hook-form';
+import isEmail from 'validator/lib/isEmail';
+import isURL from 'validator/lib/isURL';
+import isMobilePhone from 'validator/lib/isMobilePhone';
+import { EDIT_USER } from '../graphql/mutations';
+import { AuthContext } from '../auth';
 
 function EditProfilePage({ history }) {
+  const { currentUserId } = useContext(UserContext);
+  const variables = { id: currentUserId };
+  const { data, loading } = useQuery(GET_EDIT_USER_PROFILE, {
+    variables: variables
+  });
   const styles = useEditProfilePageStyles();
   const [showDrawer, setDrawer] = useState(false);
+
+  if (loading) return <LoadingScreen />;
 
   const toggleDrawerHandler = () => {
     setDrawer((prev) => !prev);
@@ -87,7 +105,7 @@ function EditProfilePage({ history }) {
         <nav>
           <Hidden smUp implementation='css'>
             <Drawer
-              variant='temorary'
+              variant='temporary'
               anchor='left'
               open={showDrawer}
               onClose={toggleDrawerHandler}
@@ -117,7 +135,7 @@ function EditProfilePage({ history }) {
         </nav>
         <main>
           {history.location.pathname.includes('edit') && (
-            <EditUserInfo user={defaultCurrentUser} />
+            <EditUserInfo user={data.users_by_pk} />
           )}
         </main>
       </section>
@@ -125,13 +143,42 @@ function EditProfilePage({ history }) {
   );
 }
 
+const DEFAULT_ERROR = { type: '', message: '' };
+
 const EditUserInfo = ({ user }) => {
   const styles = useEditProfilePageStyles();
+  const { register, handleSubmit } = useForm({ mode: 'onBlur' });
+  const { updateEmail } = useContext(AuthContext);
+  const [editUser] = useMutation(EDIT_USER);
+  const [error, setError] = useState(DEFAULT_ERROR);
+  const [open, setOpen] = useState(false);
+
+  const errorHandler = (err) => {
+    console.log('Error: ', err.message);
+    if (err.message.includes('users_username_key')) {
+      setError({ type: 'username', message: 'This username already taken' });
+    } else if (err.message.includes('auth')) {
+      setError({ type: 'email', message: err.message });
+    }
+    console.log(error);
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      setError(DEFAULT_ERROR);
+      const variables = { ...data, id: user.id };
+      await updateEmail(data.email);
+      await editUser({ variables });
+    } catch (error) {
+      errorHandler(error);
+    }
+    setOpen(true);
+  };
 
   return (
     <section className={styles.container}>
       <div className={styles.pictureSectionItem}>
-        <ProfilePicture size={38} user={user} />
+        <ProfilePicture size={38} image={user.profile_image} />
         <div className={styles.justifySelfStart}>
           <Typography className={styles.typography}>{user.username}</Typography>
           <Typography
@@ -143,21 +190,64 @@ const EditUserInfo = ({ user }) => {
           </Typography>
         </div>
       </div>
-      <form className={styles.form}>
-        <SectionItem text='Name' formItem={user.name} />
-        <SectionItem text='Username' formItem={user.username} />
-        <SectionItem text='Website' formItem={user.website} />
+      <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+        <SectionItem
+          text='Name'
+          formItem={user.name}
+          name='name'
+          valdata={{
+            ...register('name', {
+              required: true,
+              minLength: 5,
+              maxLength: 20
+            })
+          }}
+        />
+        <SectionItem
+          error={error}
+          text='Username'
+          formItem={user.username}
+          name='username'
+          valdata={{
+            ...register('username', {
+              required: true,
+              pattern: /^[a-zA-Z0-9_.]*$/,
+              minLength: 5,
+              maxLength: 50
+            })
+          }}
+        />
+        <SectionItem
+          text='Website'
+          formItem={user.website}
+          name='website'
+          valdata={{
+            ...register('website', {
+              validate: (input) =>
+                Boolean(input)
+                  ? isURL(input, {
+                      protocols: ['http', 'https'],
+                      require_protocol: true
+                    })
+                  : true
+            })
+          }}
+        />
         <div className={styles.sectionItem}>
           <aside>
             <Typography className={styles.bio}>Bio</Typography>
           </aside>
           <TextField
             variant='outlined'
+            name='bio'
+            {...register('bio', {
+              maxLength: 120
+            })}
             multiline
             rowsMax={3}
             rows={3}
             fullWidth
-            value={user.bio}
+            defaultValue={user.bio}
           />
         </div>
         <div className={styles.sectionItem}>
@@ -166,8 +256,30 @@ const EditUserInfo = ({ user }) => {
             Personal Information
           </Typography>
         </div>
-        <SectionItem text='Email' formItem={user.email} type='email' />
-        <SectionItem text='Phone Number' formItem={user.phone_number} />
+        <SectionItem
+          error={error}
+          text='Email'
+          formItem={user.email}
+          type='email'
+          name='email'
+          valdata={{
+            ...register('email', {
+              required: true,
+              validate: (input) => isEmail(input)
+            })
+          }}
+        />
+        <SectionItem
+          text='Phone Number'
+          formItem={user.phone_number}
+          name='phoneNumber'
+          valdata={{
+            ...register('phoneNumber', {
+              validate: (input) =>
+                Boolean(input) ? isMobilePhone(input) : true
+            })
+          }}
+        />
         <div className={styles.sectionItem}>
           <div />
           <Button
@@ -180,11 +292,25 @@ const EditUserInfo = ({ user }) => {
           </Button>
         </div>
       </form>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        TransitionComponent={Slide}
+        message={<span>Profile updated</span>}
+        onClose={() => setOpen(false)}
+      />
     </section>
   );
 };
 
-const SectionItem = ({ type = 'text', text, formItem }) => {
+const SectionItem = ({
+  type = 'text',
+  text,
+  formItem,
+  valdata,
+  name,
+  error
+}) => {
   const styles = useEditProfilePageStyles();
 
   return (
@@ -200,9 +326,12 @@ const SectionItem = ({ type = 'text', text, formItem }) => {
         </Hidden>
       </aside>
       <TextField
+        name={name}
+        {...valdata}
+        helperText={error?.type === name && error.message}
         variant='outlined'
         fullWidth
-        value={formItem}
+        defaultValue={formItem}
         type={type}
         className={styles.textField}
         inputProps={{

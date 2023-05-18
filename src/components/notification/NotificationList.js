@@ -19,7 +19,7 @@ function NotificationList({ hideListHandler }) {
         const isFollow = notification.type === 'follow';
 
         return (
-          <Grid item key={notification.is} className={styles.listItem}>
+          <Grid item key={notification.id} className={styles.listItem}>
             <div className={styles.listItemWrapper}>
               <div className={styles.avatarWrapper}>
                 <Avatar
