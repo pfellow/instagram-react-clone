@@ -23,10 +23,15 @@ import {
   HomeActiveIcon,
   ExploreIcon
 } from '../../icons';
-import { defaultCurrentUser, getDefaultUser } from '../../data';
 import NotificationTooltip from '../notification/NotificationTooltip';
 import NotificationList from '../notification/NotificationList';
 import { useNProgress } from '@tanem/react-nprogress';
+import { useLazyQuery } from '@apollo/client';
+import { SEARCH_USERS } from '../../graphql/queries';
+import { useContext } from 'react';
+import { UserContext } from '../../App';
+import { useRef } from 'react';
+import AddPostDialog from '../post/AddPostDialog';
 
 function Navbar({ minimalNavbar }) {
   const styles = useNavbarStyles();
@@ -71,17 +76,24 @@ function Logo() {
 }
 
 function Search({ history }) {
+  const [searchUsers, { data }] = useLazyQuery(SEARCH_USERS);
   const styles = useNavbarStyles();
   const [query, setQuery] = useState('');
-  const [loading] = useState(false);
-  const [results, setREsults] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState('');
 
   const hasResults = Boolean(query) && results.length > 0;
 
   useEffect(() => {
     if (!query.trim()) return;
-    setREsults(Array.from({ length: 5 }, () => getDefaultUser()));
-  }, [query]);
+    setLoading(true);
+    const variables = { query: `%${query}%` };
+    searchUsers({ variables });
+    if (data) {
+      setResults(data.users);
+    }
+    setLoading(false);
+  }, [query, data, searchUsers]);
 
   const clearInputHandler = () => {
     setQuery('');
@@ -96,7 +108,7 @@ function Search({ history }) {
         open={hasResults}
         title={
           hasResults && (
-            <Grid className={styles.resultContainer} container>
+            <Grid className={styles.linksContainer} container>
               {results.map((result) => (
                 <Grid
                   item
@@ -144,9 +156,13 @@ function Search({ history }) {
 }
 
 function Links({ path }) {
+  const me = useContext(UserContext);
   const styles = useNavbarStyles();
   const [showList, setShowList] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
+  const [media, setMedia] = useState(null);
+  const [showAddPostDialog, setAddPostDialog] = useState(false);
+  const inputRef = useRef();
 
   useEffect(() => {
     const timeout = setTimeout(hideTooltipHandler, 5000);
@@ -167,12 +183,34 @@ function Links({ path }) {
     setShowList(false);
   };
 
+  const openFileInput = () => {
+    inputRef.current.click();
+  };
+
+  const handleAddPost = (e) => {
+    setMedia(e.target.files[0]);
+    setAddPostDialog(true);
+  };
+
+  const closeHandler = () => {
+    setAddPostDialog(false);
+  };
+
   return (
     <div className={styles.linksContainer}>
       {showList && <NotificationList hideListHandler={hideListHandler} />}
       <div className={styles.linksWrapper}>
+        {showAddPostDialog && (
+          <AddPostDialog media={media} closeHandler={closeHandler} />
+        )}
         <Hidden xsDown>
-          <AddIcon />
+          <input
+            type='file'
+            style={{ display: 'none' }}
+            ref={inputRef}
+            onChange={handleAddPost}
+          />
+          <AddIcon onClick={openFileInput} />
         </Hidden>
         <Link to='/'>{path === '/' ? <HomeActiveIcon /> : <HomeIcon />}</Link>
         <Link to='/explore'>
@@ -190,18 +228,13 @@ function Links({ path }) {
           </div>
         </RedTooltip>
 
-        <Link to={`/${defaultCurrentUser.username}`}>
+        <Link to={`/${me.me.username}`}>
           <div
             className={
-              path === `/${defaultCurrentUser.username}`
-                ? styles.profileActive
-                : ''
+              path === `/${me.me.username}` ? styles.profileActive : ''
             }
           ></div>
-          <Avatar
-            src={defaultCurrentUser.profile_image}
-            className={styles.profileImage}
-          />
+          <Avatar src={me.me.profile_image} className={styles.profileImage} />
         </Link>
       </div>
     </div>

@@ -167,7 +167,7 @@ export const LoginWithFacebook = ({ color, iconColor, variant }) => {
   const loginWithGoogleHandler = async () => {
     try {
       await logInWithGoogle();
-      history.push('/');
+      setTimeout(history.push('/'), 0);
     } catch (error) {
       console.error('Error logging in with Gogle', error);
       setError(error.message);
