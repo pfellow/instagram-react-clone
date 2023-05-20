@@ -9,6 +9,77 @@ export const ME = gql`
       username
       profile_image
       last_checked
+      followers {
+        user {
+          id
+          user_id
+        }
+      }
+      following {
+        user {
+          id
+          user_id
+        }
+      }
+      notifications(order_by: { created_at: desc }) {
+        id
+        type
+        created_at
+        post {
+          id
+          media
+        }
+        user {
+          id
+          username
+          profile_image
+        }
+      }
+    }
+  }
+`;
+
+export const GET_POST = gql`
+  subscription getPost($postId: uuid!) {
+    posts_by_pk(id: $postId) {
+      id
+      caption
+      created_at
+      media
+      location
+      user {
+        id
+        username
+        name
+        profile_image
+      }
+      likes {
+        id
+        user_id
+      }
+      likes_aggregate {
+        aggregate {
+          count
+        }
+      }
+      saved_posts {
+        id
+        user_id
+      }
+      comments(order_by: { created_at: desc }) {
+        id
+        content
+        created_at
+        user {
+          username
+          profile_image
+        }
+      }
+      comments_aggregate {
+        aggregate {
+          count
+        }
+      }
     }
   }
 `;

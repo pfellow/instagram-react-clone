@@ -792,6 +792,7 @@ export const usePostStyles = makeStyles((theme) => ({
   },
   postCaptionContainer: {
     display: 'flex',
+    flexDirection: 'column',
     margin: '0 0 auto !important',
     order: 1,
     overflowX: 'hidden',
@@ -802,7 +803,7 @@ export const usePostStyles = makeStyles((theme) => ({
     }
   },
   postCaption: {
-    overflowY: 'scroll',
+    // overflowY: 'scroll',
     paddingLeft: '24px',
     paddingRight: '24px',
     paddingTop: '5px'
@@ -1726,6 +1727,7 @@ export const useAddPostDialogStyles = makeStyles((theme) => ({
     fontWeight: 600
   },
   paper: {
+    marginTop: '53px',
     display: 'flex',
     alignItems: 'flex-start',
     '& > *': {

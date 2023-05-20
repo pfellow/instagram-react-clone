@@ -32,6 +32,7 @@ import { useContext } from 'react';
 import { UserContext } from '../../App';
 import { useRef } from 'react';
 import AddPostDialog from '../post/AddPostDialog';
+import { isAfter } from 'date-fns';
 
 function Navbar({ minimalNavbar }) {
   const styles = useNavbarStyles();
@@ -156,10 +157,14 @@ function Search({ history }) {
 }
 
 function Links({ path }) {
-  const me = useContext(UserContext);
+  const { me, currentUserId } = useContext(UserContext);
+  const newNotifications = me.notifications.filter(({ created_at }) =>
+    isAfter(new Date(created_at), new Date(me.last_checked))
+  );
+  const hasNotifications = newNotifications.length > 0;
   const styles = useNavbarStyles();
   const [showList, setShowList] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(hasNotifications);
   const [media, setMedia] = useState(null);
   const [showAddPostDialog, setAddPostDialog] = useState(false);
   const inputRef = useRef();
@@ -198,7 +203,13 @@ function Links({ path }) {
 
   return (
     <div className={styles.linksContainer}>
-      {showList && <NotificationList hideListHandler={hideListHandler} />}
+      {showList && (
+        <NotificationList
+          notifications={me.notifications}
+          hideListHandler={hideListHandler}
+          currentUserId={currentUserId}
+        />
+      )}
       <div className={styles.linksWrapper}>
         {showAddPostDialog && (
           <AddPostDialog media={media} closeHandler={closeHandler} />
@@ -221,20 +232,21 @@ function Links({ path }) {
           open={showTooltip}
           onOpen={hideTooltipHandler}
           TransitionComponent={Zoom}
-          title={<NotificationTooltip />}
+          title={<NotificationTooltip notifications={newNotifications} />}
         >
-          <div className={styles.notifications} onClick={toggleListHandler}>
+          <div
+            className={hasNotifications ? styles.notifications : ''}
+            onClick={toggleListHandler}
+          >
             {showList ? <LikeActiveIcon /> : <LikeIcon />}
           </div>
         </RedTooltip>
 
-        <Link to={`/${me.me.username}`}>
+        <Link to={`/${me.username}`}>
           <div
-            className={
-              path === `/${me.me.username}` ? styles.profileActive : ''
-            }
+            className={path === `/${me.username}` ? styles.profileActive : ''}
           ></div>
-          <Avatar src={me.me.profile_image} className={styles.profileImage} />
+          <Avatar src={me.profile_image} className={styles.profileImage} />
         </Link>
       </div>
     </div>
