@@ -31,13 +31,13 @@ function FeedPost({ post, index }) {
   const {
     media,
     id,
-    likes,
+    // likes,
     likes_aggregate,
     user,
     caption,
     comments,
     comments_aggregate,
-    saved_posts,
+    // saved_posts,
     location,
     created_at
   } = post;
