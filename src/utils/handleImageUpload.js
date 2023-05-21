@@ -1,7 +1,7 @@
-const handleImageUpload = async (image) => {
+const handleImageUpload = async (image, uploadPreset = 'instagram') => {
   const data = new FormData();
   data.append('file', image);
-  data.append('upload_preset', 'instagram');
+  data.append('upload_preset', uploadPreset);
   data.append('cloudname', 'dlr3pqk46');
 
   const response = await fetch(

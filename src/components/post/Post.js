@@ -32,6 +32,7 @@ import {
   UNSAVE_POST
 } from '../../graphql/mutations';
 import { formatDateToNowShort, formatPostDate } from '../../utils/formatDate';
+import Image from 'react-graceful-image';
 
 function Post({ postId }) {
   const styles = usePostStyles();
@@ -50,7 +51,7 @@ function Post({ postId }) {
     saved_posts,
     location,
     user,
-    user_id,
+    // user_id,
     caption,
     comments,
     created_at
@@ -70,7 +71,7 @@ function Post({ postId }) {
         </div>
         {/* Post Image */}
         <div className={styles.postImage}>
-          <img src={media} alt='Post media' className={styles.image} />
+          <Image src={media} alt='Post media' className={styles.image} />
         </div>
         {/* Post Buttons */}
         <div className={styles.postButtonsWrapper}>
@@ -114,7 +115,11 @@ function Post({ postId }) {
         </div>
       </article>
       {showOptionsDialog && (
-        <OptionsDialog onClose={() => setShowOptionsDialog(false)} />
+        <OptionsDialog
+          postId={postId}
+          authorId={user.id}
+          onClose={() => setShowOptionsDialog(false)}
+        />
       )}
     </div>
   );

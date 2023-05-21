@@ -14,8 +14,6 @@ function NotificationTooltip({ notifications }) {
   const followCount = countNotifications('follow');
   const likeCount = countNotifications('like');
 
-  console.log(followCount, likeCount);
-
   return (
     <div className={styles.tooltipContainer}>
       {followCount > 0 && (

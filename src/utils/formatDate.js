@@ -1,4 +1,9 @@
-import { format, isThisYear, formatDistanceStrict } from 'date-fns';
+import {
+  format,
+  isThisYear,
+  formatDistanceStrict,
+  formatDistanceToNow
+} from 'date-fns';
 
 export const formatPostDate = (date) => {
   const formatShort = format(new Date(date), 'MMMM d');
@@ -12,4 +17,8 @@ export const formatDateToNowShort = (date) => {
     .split(' ')
     .map((s, i) => (i === 1 ? s[0] : s))
     .join('');
+};
+
+export const formatDateToNow = (date) => {
+  return formatDistanceToNow(new Date(date), { addSuffix: true }).toUpperCase();
 };

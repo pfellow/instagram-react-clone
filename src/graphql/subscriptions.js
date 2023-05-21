@@ -9,6 +9,7 @@ export const ME = gql`
       username
       profile_image
       last_checked
+      created_at
       followers {
         user {
           id
@@ -66,7 +67,7 @@ export const GET_POST = gql`
         id
         user_id
       }
-      comments(order_by: { created_at: desc }) {
+      comments(order_by: { created_at: desc, user: { username: asc } }) {
         id
         content
         created_at

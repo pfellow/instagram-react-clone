@@ -74,7 +74,7 @@ export const GET_USER_PROFILE = gql`
           count
         }
       }
-      saved_posts {
+      saved_posts(order_by: { created_at: desc }) {
         post {
           id
           media
@@ -90,7 +90,7 @@ export const GET_USER_PROFILE = gql`
           }
         }
       }
-      posts {
+      posts(order_by: { created_at: desc }) {
         id
         media
         likes_aggregate {
@@ -102,6 +102,138 @@ export const GET_USER_PROFILE = gql`
           aggregate {
             count
           }
+        }
+      }
+    }
+  }
+`;
+
+export const SUGGEST_USERS = gql`
+  query suggestUsers(
+    $limit: Int!
+    $followerIds: [uuid!]!
+    $createdAt: timestamptz!
+  ) {
+    users(
+      limit: $limit
+      where: {
+        _or: [
+          { id: { _in: $followerIds } }
+          { created_at: { _gt: $createdAt } }
+        ]
+      }
+    ) {
+      id
+      username
+      name
+      profile_image
+    }
+  }
+`;
+
+export const EXPLORE_POSTS = gql`
+  query explorePosts($followingIds: [uuid!]!) {
+    posts(
+      order_by: {
+        created_at: desc
+        likes_aggregate: { count: desc }
+        comments_aggregate: { count: desc }
+      }
+      where: { id: { _nin: $followingIds } }
+    ) {
+      id
+      media
+      likes_aggregate {
+        aggregate {
+          count
+        }
+      }
+      comments_aggregate {
+        aggregate {
+          count
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MORE_POSTS_FROM_USER = gql`
+  query getMorePostsFromUser($userId: uuid!, $postId: uuid!) {
+    posts(
+      limit: 6
+      where: { user_id: { _eq: $userId }, _not: { id: { _eq: $postId } } }
+    ) {
+      id
+      media
+      likes_aggregate {
+        aggregate {
+          count
+        }
+      }
+      comments_aggregate {
+        aggregate {
+          count
+        }
+      }
+    }
+  }
+`;
+
+export const GET_POST = gql`
+  query getPost($postId: uuid!) {
+    posts_by_pk(id: $postId) {
+      id
+      user {
+        id
+        username
+      }
+    }
+  }
+`;
+
+export const GET_FEED = gql`
+  query getFeed($limit: Int!, $feedIds: [uuid!]!, $lastTimestamp: timestamptz) {
+    posts(
+      limit: $limit
+      where: { user_id: { _in: $feedIds }, created_at: { _lt: $lastTimestamp } }
+      order_by: { created_at: desc }
+    ) {
+      id
+      caption
+      created_at
+      media
+      location
+      user {
+        id
+        username
+        name
+        profile_image
+      }
+      likes {
+        id
+        user_id
+      }
+      likes_aggregate {
+        aggregate {
+          count
+        }
+      }
+      saved_posts {
+        id
+        user_id
+      }
+      comments(order_by: { created_at: desc }, limit: 2) {
+        id
+        content
+        created_at
+        user {
+          username
+          profile_image
+        }
+      }
+      comments_aggregate {
+        aggregate {
+          count
         }
       }
     }

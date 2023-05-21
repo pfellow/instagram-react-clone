@@ -18,7 +18,7 @@ import ProfileTabs from '../components/profile/ProfileTabs';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import { GearIcon } from '../icons';
 import { AuthContext } from '../auth';
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { GET_USER_PROFILE } from '../graphql/queries';
 import LoadingScreen from '../components/shared/LoadingScreen';
 import { UserContext } from '../App';
@@ -32,7 +32,10 @@ function ProfilePage() {
   const history = useHistory();
 
   const variables = { username };
-  const { data, loading } = useQuery(GET_USER_PROFILE, { variables });
+  const { data, loading } = useQuery(GET_USER_PROFILE, {
+    variables,
+    fetchPolicy: 'no-cache'
+  });
 
   if (loading) return <LoadingScreen />;
 
@@ -122,7 +125,6 @@ const ProfileNameSection = ({ user, isOwner, optionsMenuClickHandler }) => {
   };
 
   let followButton;
-  console.log(isFollowing, isFollower);
   // const isFollowing = true;
   // const isFollower = false;
 
@@ -310,12 +312,14 @@ const OptionsMenu = ({ closeMenuHandler }) => {
   const styles = useProfilePageStyles();
   const { signOut } = useContext(AuthContext);
   const history = useHistory();
+  const client = useApolloClient();
 
   const [showLogOutMessage, setLogoutMessage] = useState(false);
 
   const logOutClickHandler = () => {
     setLogoutMessage(true);
-    setTimeout(() => {
+    setTimeout(async () => {
+      await client.clearStore();
       signOut();
       history.push('/accounts/login');
     }, 2000);

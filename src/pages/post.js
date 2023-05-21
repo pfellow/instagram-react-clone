@@ -11,7 +11,7 @@ function PostPage() {
   return (
     <Layout>
       <Post postId={postId} />
-      <MorePostsFromUser />
+      <MorePostsFromUser postId={postId} />
     </Layout>
   );
 }

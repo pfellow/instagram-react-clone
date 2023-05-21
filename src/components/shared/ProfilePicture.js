@@ -18,7 +18,7 @@ function ProfilePicture({ size, image, isOwner }) {
   };
 
   const handleUpdateProfilePic = async (e) => {
-    const url = await handleImageUpload(e.target.files[0]);
+    const url = await handleImageUpload(e.target.files[0], 'instagram_avatar');
     const variables = { id: currentUserId, profileImage: url };
     await editUserAvatar({ variables });
     setImg(url);
