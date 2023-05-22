@@ -47,8 +47,6 @@ function FeedPage() {
 
   if (loading) return <LoadingScreen />;
 
-  console.log(data);
-
   return (
     <Layout>
       <div className={styles.container}>

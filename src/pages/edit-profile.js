@@ -157,13 +157,12 @@ const EditUserInfo = ({ user }) => {
   const [editUserAvatar] = useMutation(EDIT_USER_AVATAR);
 
   const errorHandler = (err) => {
-    console.log('Error: ', err.message);
     if (err.message.includes('users_username_key')) {
       setError({ type: 'username', message: 'This username already taken' });
     } else if (err.message.includes('auth')) {
       setError({ type: 'email', message: err.message });
     }
-    console.log(error);
+    console.error(error);
   };
 
   const onSubmit = async (data) => {

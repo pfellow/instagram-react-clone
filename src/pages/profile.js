@@ -156,7 +156,6 @@ const ProfileNameSection = ({ user, isOwner, optionsMenuClickHandler }) => {
         variant='contained'
         color='primary'
         className={styles.button}
-        Follow
       >
         Follow
       </Button>

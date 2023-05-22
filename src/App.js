@@ -55,8 +55,7 @@ function App() {
 
   const me = isAuth && data ? data.users[0] : null;
   const currentUserId = me?.id || null;
-  console.log('SOLVE THIS!!');
-  const followingIds = me?.following.map(({ user }) => user.id);
+  const followingIds = me?.following.map(({ user }) => user.id) || [];
   const followerIds = me?.followers.map(({ user }) => user.id);
   const feedIds = [...followingIds, currentUserId];
 

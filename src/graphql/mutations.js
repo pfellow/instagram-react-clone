@@ -93,7 +93,7 @@ export const LIKE_POST = gql`
     $type: String!
   ) {
     insert_likes(objects: { post_id: $postId, user_id: $userId }) {
-      affected_rows
+      __typename
     }
     insert_notifications(
       objects: {
@@ -156,7 +156,16 @@ export const CREATE_COMMENT = gql`
     insert_comments(
       objects: { content: $content, post_id: $postId, user_id: $userId }
     ) {
-      affected_rows
+      returning {
+        id
+        created_at
+        post_id
+        user_id
+        content
+        user {
+          username
+        }
+      }
     }
   }
 `;

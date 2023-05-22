@@ -41,7 +41,6 @@ function LoginPage() {
       }
     });
 
-    console.log(response.data);
     return response.data.users[0]?.email || 'no@email.com';
   };
 
